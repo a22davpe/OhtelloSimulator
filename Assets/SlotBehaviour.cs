@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
 {
-    public int[] index = new int[2];
+    public Vector2Int index;
     public GameManager gameManager;
     private SlotState state = SlotState.Neutral;
 
@@ -29,7 +29,7 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
         if(State == SlotState.Neutral && gameManager.playersTurn)
         {
             State = SlotState.Player;
-
+            gameManager.stateBoard[index.x, index.y] = SlotState.Player;
             gameManager.PlayerHasMoved();
         }
     }

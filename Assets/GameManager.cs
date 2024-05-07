@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     public void PlayerHasMoved()
     {
         playersTurn = false;
-        if (CheckForWins(board,SlotState.Player)){ Debug.Log("Player Wins"); }
+        if (CheckForWins(stateBoard,SlotState.Player)){ Debug.Log("Player Wins"); }
         AiTurn();
     }
 
@@ -51,16 +51,17 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("af");
 
-        if(CheckForWins(board, SlotState.AI)) { Debug.Log("Ai wins"); }
+        if(CheckForWins(stateBoard, SlotState.AI)) { Debug.Log("Ai wins"); }
 
-        Vector2Int temp = MinMax(board, 1, true);
+        Vector2Int temp = MinMax(stateBoard, 1, true);
 
         board[temp.x, temp.y].State = SlotState.AI;
+        stateBoard[temp.x, temp.y] = SlotState.AI;
         playersTurn = true;
     }
 
 
-    private Vector2Int MinMax(SlotBehaviour[,] board, int deapth, bool maxPlayer)
+    private Vector2Int MinMax(SlotState[,] board, int deapth, bool maxPlayer)
     {
         if(deapth ==0)
         {
@@ -84,7 +85,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < moves.Count; i++)
         {
-            SlotBehaviour[,] modifiedBoard = (SlotBehaviour[,])board.Clone();
+            SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
             MakeMove(moves[i],SlotState.AI,ref modifiedBoard);
 
             int newValue = MinMaxValue(board,deapth+1,!maxPlayer);
@@ -99,11 +100,11 @@ public class GameManager : MonoBehaviour
         return bestMove;
     }
 
-    private void MakeMove(Vector2Int position, SlotState state,ref SlotBehaviour[,] board)
+    private void MakeMove(Vector2Int position, SlotState state,ref SlotState[,] board)
     {
-        board[position.x, position.y].State = state;
+        board[position.x, position.y] = state;
     }
-    private int MinMaxValue(SlotBehaviour[,] board, int searchDepth, bool playerMax)
+    private int MinMaxValue(SlotState[,] board, int searchDepth, bool playerMax)
     {
         if (MaxSearchDepth <= searchDepth)
             return GetHeuristicValue(board);
@@ -122,7 +123,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < moves.Count; i++)
         {
-            SlotBehaviour[,] modifiedBoard = (SlotBehaviour[,])board.Clone();
+            SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
             MakeMove(moves[i], SlotState.AI, ref modifiedBoard);
 
             int newValue = MinMaxValue(modifiedBoard, searchDepth+1, !playerMax);
@@ -141,34 +142,24 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private List<Vector2Int> GetPossibleMoves(SlotBehaviour[,] board)
+    private List<Vector2Int> GetPossibleMoves(SlotState[,] board)
     {
         List<Vector2Int> temp = new List<Vector2Int>();
         for (int y = 0; y < board.GetLength(0); y++)
         {
             for (int x = 0; x < board.GetLength(1); x++)
             {
-                if (board[x, y].State == SlotState.Neutral)
-                    temp.Add(board[x, y].index);
+                if (board[x, y] == SlotState.Neutral)
+                    temp.Add(new Vector2Int(x,y));
             }
         }
 
         return temp;
     }
 
-    private SlotBehaviour[,] DeepClone(SlotBehaviour[,] list)
+    private int GetHeuristicValue(SlotState[,] board)
     {
-        for (int i = 0; i < list.GetLength(0); i++)
-        {
-            for (int j = 0; j < list.GetLength(1); j++)
-            {
-                list[i, j] = list[i, j].Clone();
-            }
-        }
-    }
-
-    private int GetHeuristicValue(SlotBehaviour[,] board)
-    {
+        Debug.Log("Jag tror inte den här funkar", this);
         if (CheckForWins(board, SlotState.AI))
             return 1;
         return 0;
@@ -278,12 +269,12 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private bool CheckForWins(SlotBehaviour[,] board,SlotState state)
+    private bool CheckForWins(SlotState[,] board,SlotState state)
     {
         //Checks rows
         for (int i = 0; i < board.GetLength(0); i ++)
         {
-            if (board[0,i].State == state && board[1,i].State == state && board[2,i].State == state)
+            if (board[0,i] == state && board[1,i] == state && board[2,i] == state)
             {
                 return true;
             }
@@ -292,15 +283,15 @@ public class GameManager : MonoBehaviour
         //Checks coloumns
         for (int i = 0; i < board.GetLength(1); i ++)
         {
-            if (board[i, 0].State == state && board[i, 1].State == state && board[i, 2].State == state)
+            if (board[i, 0] == state && board[i, 1] == state && board[i, 2] == state)
             {
                 return true;
             }
         }
 
         //Checks diagonals
-        if ((board[0, 0].State == state && board[1, 1].State == state && board[2, 2].State == state) ||
-            (board[0, 2].State == state && board[1, 1].State == state && board[2, 0].State == state))
+        if ((board[0, 0] == state && board[1, 1] == state && board[2, 2] == state) ||
+            (board[0, 2] == state && board[1, 1] == state && board[2, 0] == state))
         {
             return true;
         }

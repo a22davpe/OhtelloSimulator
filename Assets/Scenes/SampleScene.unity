@@ -154,6 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotPrefab: {fileID: 590881738362619296, guid: 9d6df2ef01d1b7c4a9081dd3008f6c3a, type: 3}
   slotHolder: {fileID: 1869703431}
+  MaxSearchDepth: 6
   playersTurn: 1
 --- !u!4 &86974179
 Transform:

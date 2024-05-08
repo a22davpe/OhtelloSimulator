@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     //TODO:
-    //*Finns behöver boardet vara slotbehavoiur[,] i minmax?
+    //*Finns behï¿½ver boardet vara slotbehavoiur[,] i minmax?
 
     SlotBehaviour[,] board = new SlotBehaviour[3,3];
     public SlotState[,] stateBoard = new SlotState[3, 3];
@@ -48,8 +48,7 @@ public class GameManager : MonoBehaviour
 
         //MinMax();
 
-
-        Debug.Log("af");
+        
 
         if(CheckForWins(stateBoard, SlotState.AI)) { Debug.Log("Ai wins"); }
 
@@ -76,8 +75,8 @@ public class GameManager : MonoBehaviour
         //Node is a leaf  
         if(moves.Count == 0)
         {
-            return new Vector2Int(-1,-1);
             Debug.LogError("No moves");
+            return new Vector2Int(-1,-1);
         }
 
         int bestMoveValue = int.MinValue;
@@ -89,7 +88,7 @@ public class GameManager : MonoBehaviour
             MakeMove(moves[i],SlotState.AI,ref modifiedBoard);
 
             int newValue = MinMaxValue(board,deapth+1,!maxPlayer);
-
+            Debug.Log($"minmax: {newValue}");
             if(newValue > bestMoveValue)
             {
                 bestMoveValue = newValue;
@@ -108,9 +107,9 @@ public class GameManager : MonoBehaviour
     {
         if (MaxSearchDepth <= searchDepth)
             return GetHeuristicValue(board);
-
-        Vector2Int move;
+        
         List<Vector2Int> moves = GetPossibleMoves(board);
+        //Debug.Log(moves.Count);
         
         if(moves.Count == 0)
         {
@@ -121,12 +120,14 @@ public class GameManager : MonoBehaviour
         if (playerMax)
             bestValue = int.MinValue;
 
+        //den plasserar bara ut ai!!!!!!!!!!!!!!!
         for (int i = 0; i < moves.Count; i++)
         {
             SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
             MakeMove(moves[i], SlotState.AI, ref modifiedBoard);
 
             int newValue = MinMaxValue(modifiedBoard, searchDepth+1, !playerMax);
+            Debug.Log($"value: {newValue}");
             if (playerMax)
             {
                 if (newValue > bestValue)
@@ -157,11 +158,13 @@ public class GameManager : MonoBehaviour
         return temp;
     }
 
+    //borde vet om det Ã¤r ai eller spelare som checkar
     private int GetHeuristicValue(SlotState[,] board)
     {
-        Debug.Log("Jag tror inte den här funkar", this);
         if (CheckForWins(board, SlotState.AI))
+        {
             return 1;
+        }
         return 0;
     }
 

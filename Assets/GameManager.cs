@@ -7,8 +7,8 @@ public class GameManager : MonoBehaviour
     //TODO:
     //*Finns beh�ver boardet vara slotbehavoiur[,] i minmax?
 
-    SlotBehaviour[,] board = new SlotBehaviour[3,3];
-    public SlotState[,] stateBoard = new SlotState[3, 3];
+    SlotBehaviour[,] board = new SlotBehaviour[8,8];
+    public SlotState[,] stateBoard = new SlotState[8, 8];
     [SerializeField] SlotBehaviour slotPrefab;
     [SerializeField] Transform slotHolder;
     public int MaxSearchDepth = 3;
@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
                 temp.gameManager = this;
                 temp.index = new Vector2Int(x,y);
                 board[x,y] = temp;
+                stateBoard[x, y] = SlotState.Neutral;
             }
         }
     }
@@ -56,6 +57,7 @@ public class GameManager : MonoBehaviour
 
         board[temp.x, temp.y].State = SlotState.AI;
         stateBoard[temp.x, temp.y] = SlotState.AI;
+        Flip(temp, SlotState.AI);
         playersTurn = true;
     }
 
@@ -81,8 +83,8 @@ public class GameManager : MonoBehaviour
             SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
             MakeMove(moves[i],SlotState.AI,ref modifiedBoard);
 
-            int newValue = MinMaxValue(board,deapth+1,maxPlayer);
-            Debug.Log($"minmax: {newValue}");
+            int newValue = MinMaxValue(modifiedBoard,deapth+1,maxPlayer);
+            //Debug.Log($"minmax: {newValue}");
             if(newValue > bestMoveValue)
             {
                 bestMoveValue = newValue;
@@ -97,13 +99,15 @@ public class GameManager : MonoBehaviour
     {
         board[position.x, position.y] = state;
     }
+
+
     private int MinMaxValue(SlotState[,] board, int searchDepth, bool playerMax)
     {
         if (MaxSearchDepth <= searchDepth)
-            return GetHeuristicValue(board, playerMax);
+            return GetHeuristicValue(board);
         
         List<Vector2Int> moves = GetPossibleMoves(board);
-        Debug.Log($"MovesCount: {moves.Count}");
+        //Debug.Log($"MovesCount: {moves.Count}");
         
         if(moves.Count == 0)
         {
@@ -123,8 +127,9 @@ public class GameManager : MonoBehaviour
             else
                 MakeMove(moves[i], SlotState.Player, ref modifiedBoard);
 
+
             int newValue = MinMaxValue(modifiedBoard, searchDepth+1, !playerMax);
-            Debug.Log($"newValue: {newValue}, Depth: {searchDepth}");
+            //Debug.Log($"newValue: {newValue}, Depth: {searchDepth}");
             if (playerMax)
             {
                 if (newValue > bestValue)
@@ -135,7 +140,7 @@ public class GameManager : MonoBehaviour
                 if (newValue < bestValue)
                     bestValue = newValue;
             }
-            Debug.Log($"bestValue: {bestValue}");
+            //Debug.Log($"bestValue: {bestValue}");
         }
         return bestValue;
     }
@@ -157,25 +162,83 @@ public class GameManager : MonoBehaviour
     }
 
     //borde vet om det är ai eller spelare som checkar
-    private int GetHeuristicValue(SlotState[,] board, bool playersTurn)
+    private int GetHeuristicValue(SlotState[,] board)
     {
-        if (playersTurn)
+        var temp = Score(board,SlotState.AI) - Score(board, SlotState.Player);
+        //Debug.Log(temp);
+        return temp;
+    }
+
+    private int Score(SlotState[,] board, SlotState slotState)
+    {
+        int temp = 0;
+        foreach (var item in board)
         {
-            if (CheckForWins(board, SlotState.Player))
-            {
-                return 1;
-                Debug.Log("ahhhh");
-            }
+            if (item == slotState)
+                temp++;
         }
-        else
+        return temp;
+    }
+
+    public void Flip(Vector2Int newTile, SlotState state)
+    {
+
+        for (int y = -1; y <= 1; y++)
         {
-            if (CheckForWins(board, SlotState.AI))
+            for (int x = -1; x <= 1; x++)
             {
-                return 1;
+                if (y == 0 && x == 0)
+                    continue;
+
+                if(CheckDirection(new Vector2Int(x,y),newTile,state, out List<Vector2Int> result))
+                {
+                    foreach (var item in result)
+                    {
+                        board[item.x,item.y].State = state;
+                    }
+                }
             }
         }
 
-        return 0;
+
+
+    }
+
+    private bool CheckDirection(Vector2Int direction,Vector2Int startPoint, SlotState userState, out List<Vector2Int> result)
+    {
+        SlotState opponentState = SlotState.Player;
+
+        if (userState == SlotState.Player)
+            opponentState = SlotState.AI;
+
+        result = new List<Vector2Int>();
+        int i = 0;
+        while (true)
+        {
+            i++;
+            int deltaX = startPoint.x + direction.x*i;
+            int deltaY = startPoint.y + direction.y*i;
+            
+            //checkar om utanför board
+            if (deltaY >= board.GetLength(0) || deltaY < 0 || deltaX >= board.GetLength(1) || deltaX < 0)
+                return false;
+
+            if (stateBoard[deltaX, deltaY] == SlotState.Neutral)
+                return false;
+
+            if (stateBoard[deltaX, deltaY] == userState)
+                return true;
+
+            if (stateBoard[deltaX, deltaY] == opponentState)
+                result.Add(new Vector2Int(deltaX, deltaY));
+            
+
+            if (i > 10)
+                break;
+        }
+
+        Debug.LogError("Något är trasigt");
+        return false;
     }
 
 

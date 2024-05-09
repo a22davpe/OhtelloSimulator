@@ -20,6 +20,7 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
         get => state;
         set {
             state = value;
+            gameManager.stateBoard[index.x, index.y] = value;
             UpdateTile();
             } 
     }
@@ -30,6 +31,7 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
         {
             State = SlotState.Player;
             gameManager.stateBoard[index.x, index.y] = SlotState.Player;
+            gameManager.Flip(index,state);
             gameManager.PlayerHasMoved();
         }
     }

@@ -27,7 +27,7 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if(State == SlotState.Neutral && gameManager.playersTurn)
+        if(State == SlotState.Neutral && gameManager.playersTurn && gameManager.IsPlayable(index,SlotState.Player, gameManager.stateBoard))
         {
             State = SlotState.Player;
             gameManager.stateBoard[index.x, index.y] = SlotState.Player;
@@ -40,6 +40,7 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
     void Start()
     {
         image.sprite = NeutralSprite;
+        State = state;
     }
 
     // Update is called once per frame
@@ -62,9 +63,6 @@ public class SlotBehaviour : MonoBehaviour, IPointerClickHandler
 
             case SlotState.Neutral:
                 image.sprite = NeutralSprite;
-                break;
-
-            default:
                 break;
         }
     }

@@ -242,8 +242,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotPrefab: {fileID: 590881738362619296, guid: 9d6df2ef01d1b7c4a9081dd3008f6c3a, type: 3}
   slotHolder: {fileID: 18580228}
-  MaxSearchDepth: 1
+  MaxSearchDepth: 3
   playersTurn: 1
+  onWin:
+    m_PersistentCalls:
+      m_Calls: []
+  onLose:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1678896924
 GameObject:
   m_ObjectHideFlags: 0

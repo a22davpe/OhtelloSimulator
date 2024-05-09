@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
 
         if(CheckForWins(stateBoard, SlotState.AI)) { Debug.Log("Ai wins"); }
 
-        Vector2Int temp = MinMax(stateBoard, 1, true);
+        Vector2Int temp = MinMax(stateBoard, 0, true);
 
         board[temp.x, temp.y].State = SlotState.AI;
         stateBoard[temp.x, temp.y] = SlotState.AI;
@@ -62,12 +62,6 @@ public class GameManager : MonoBehaviour
 
     private Vector2Int MinMax(SlotState[,] board, int deapth, bool maxPlayer)
     {
-        if(deapth ==0)
-        {
-            //user dumb dumb
-            return new Vector2Int(0,0);
-            Debug.LogWarning("Deapth is 0");
-        }
 
         List<Vector2Int> moves;
         moves = GetPossibleMoves(board);
@@ -87,7 +81,7 @@ public class GameManager : MonoBehaviour
             SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
             MakeMove(moves[i],SlotState.AI,ref modifiedBoard);
 
-            int newValue = MinMaxValue(board,deapth+1,!maxPlayer);
+            int newValue = MinMaxValue(board,deapth+1,maxPlayer);
             Debug.Log($"minmax: {newValue}");
             if(newValue > bestMoveValue)
             {
@@ -106,10 +100,10 @@ public class GameManager : MonoBehaviour
     private int MinMaxValue(SlotState[,] board, int searchDepth, bool playerMax)
     {
         if (MaxSearchDepth <= searchDepth)
-            return GetHeuristicValue(board);
+            return GetHeuristicValue(board, playerMax);
         
         List<Vector2Int> moves = GetPossibleMoves(board);
-        //Debug.Log(moves.Count);
+        Debug.Log($"MovesCount: {moves.Count}");
         
         if(moves.Count == 0)
         {
@@ -124,10 +118,13 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < moves.Count; i++)
         {
             SlotState[,] modifiedBoard = (SlotState[,])board.Clone();
-            MakeMove(moves[i], SlotState.AI, ref modifiedBoard);
+            if(playerMax)
+                MakeMove(moves[i], SlotState.AI, ref modifiedBoard);
+            else
+                MakeMove(moves[i], SlotState.Player, ref modifiedBoard);
 
             int newValue = MinMaxValue(modifiedBoard, searchDepth+1, !playerMax);
-            Debug.Log($"value: {newValue}");
+            Debug.Log($"newValue: {newValue}, Depth: {searchDepth}");
             if (playerMax)
             {
                 if (newValue > bestValue)
@@ -138,6 +135,7 @@ public class GameManager : MonoBehaviour
                 if (newValue < bestValue)
                     bestValue = newValue;
             }
+            Debug.Log($"bestValue: {bestValue}");
         }
         return bestValue;
     }
@@ -159,12 +157,24 @@ public class GameManager : MonoBehaviour
     }
 
     //borde vet om det är ai eller spelare som checkar
-    private int GetHeuristicValue(SlotState[,] board)
+    private int GetHeuristicValue(SlotState[,] board, bool playersTurn)
     {
-        if (CheckForWins(board, SlotState.AI))
+        if (playersTurn)
         {
-            return 1;
+            if (CheckForWins(board, SlotState.Player))
+            {
+                return 1;
+                Debug.Log("ahhhh");
+            }
         }
+        else
+        {
+            if (CheckForWins(board, SlotState.AI))
+            {
+                return 1;
+            }
+        }
+
         return 0;
     }
 

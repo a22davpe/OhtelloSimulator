@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
 
     [HideInInspector] public bool playersTurn = true;
 
+    private bool GameIsOver => Score(stateBoard, SlotState.Neutral) == 0;
+
     public UnityEvent onWin;
     public UnityEvent onLose;
     void Start()
@@ -53,7 +55,6 @@ public class GameManager : MonoBehaviour
     public void PlayerHasMoved()
     {
         playersTurn = false;
-        if (CheckForWins(stateBoard,SlotState.Player)){ Debug.Log("Player Wins"); }
 
         if (GameIsOver)
         {
@@ -69,12 +70,9 @@ public class GameManager : MonoBehaviour
 
     private void AiTurn()
     {
-
-        //MinMax();
-
-
-
-        if (CheckForWins(stateBoard, SlotState.AI)) { Debug.Log("Ai wins"); }
+        //Kollar om AI har några pjäser kvar
+        if (Score(stateBoard, SlotState.AI) == 0)
+            onWin.Invoke(); 
 
         Vector2Int temp = MinMax(stateBoard, 0, true);
 
@@ -94,12 +92,34 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (Score(stateBoard, SlotState.Player) == 0)
+            onLose.Invoke();
+
         if (GetPossibleMoves(stateBoard, SlotState.Player).Count == 0)
             AiTurn();
         playersTurn = true;
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //
+    //                      Minmax
+    //
     private Vector2Int MinMax(SlotState[,] board, int deapth, bool maxPlayer)
     {
 
@@ -195,12 +215,12 @@ public class GameManager : MonoBehaviour
         {
             for (int x = 0; x < board.GetLength(1); x++)
             {
-                
-                if(IsPlayable(new Vector2Int(x, y),player, board)){
+                if(board[x, y] != SlotState.Neutral)
+                    continue;
+
+                if (IsPlayable(new Vector2Int(x, y),player, board)){
                     temp.Add(new Vector2Int(x, y));
                 }
-                            //if (board[x, y] == SlotState.Neutral)
-                            //    temp.Add(new Vector2Int(x,y));
             }
         }
 
@@ -286,6 +306,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
     private bool CheckDirection(Vector2Int direction,Vector2Int startPoint, SlotState userState, SlotState[,] board, out List<Vector2Int> result)
     {
         SlotState opponentState = SlotState.Player;
@@ -327,151 +348,7 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    private bool GameIsOver => Score(stateBoard, SlotState.Neutral) == 0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private bool CreatesTwiInARow(int[] index, SlotState targetState)
-    {
-        for (int y = -1; y <= 1; y++)
-        {
-            for (int x = -1; x <= 1; x++)
-            {
-                if (y == 0 && x == 0)
-                    continue;
-
-                int deltaX = x + index[0];
-                int deltaY = y + index[1];
-                if (deltaY >= board.GetLength(0) || deltaY < 0 || deltaX >= board.GetLength(1) || deltaX < 0)
-                    continue;
-
-                if (board[deltaX, deltaY].State == targetState)
-                    return true;
-            }
-        }
-        return false;
-    }
-
-
-    private bool CheckForWins(SlotState[,] board,SlotState state)
-    {
-        //Checks rows
-        for (int i = 0; i < board.GetLength(0); i ++)
-        {
-            if (board[0,i] == state && board[1,i] == state && board[2,i] == state)
-            {
-                return true;
-            }
-        }
-
-        //Checks coloumns
-        for (int i = 0; i < board.GetLength(1); i ++)
-        {
-            if (board[i, 0] == state && board[i, 1] == state && board[i, 2] == state)
-            {
-                return true;
-            }
-        }
-
-        //Checks diagonals
-        if ((board[0, 0] == state && board[1, 1] == state && board[2, 2] == state) ||
-            (board[0, 2] == state && board[1, 1] == state && board[2, 0] == state))
-        {
-            return true;
-        }
-
-        return false;
-    }
 }
-
-//public class Vector2Int
-//{
-//    public int x;
-//    public int y;
-//    public Vector2Int(int x, int y)
-//    {
-//        this.x = x;
-//        this.y = y;
-//    }
-//}
 
  public enum SlotState
 {

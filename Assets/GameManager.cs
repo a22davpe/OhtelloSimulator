@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
 
     public UnityEvent onWin;
     public UnityEvent onLose;
+
+    public UnityEvent<int> onPlayerScoreGain;
+    public UnityEvent<int> onEnemyScoreGain;
     void Start()
     {
         for (int y = 0; y < board.GetLength(0); y++)
@@ -58,13 +61,14 @@ public class GameManager : MonoBehaviour
 
         if (GameIsOver)
         {
-            if (Score(stateBoard, SlotState.Player) > Score(stateBoard, SlotState.Player))
+            if (Score(stateBoard, SlotState.Player) > Score(stateBoard, SlotState.AI))
                 onWin.Invoke();
             else
                 onLose.Invoke();
             return;
         }
-
+        onPlayerScoreGain.Invoke(Score(stateBoard, SlotState.Player));
+        onEnemyScoreGain.Invoke(Score(stateBoard, SlotState.AI));
         AiTurn();
     }
 
@@ -85,13 +89,16 @@ public class GameManager : MonoBehaviour
 
         if (GameIsOver)
         {
-            if (Score(stateBoard, SlotState.Player) > Score(stateBoard, SlotState.Player))
+            if (Score(stateBoard, SlotState.Player) > Score(stateBoard, SlotState.AI))
                 onWin.Invoke();
             else
                 onLose.Invoke();
             return;
         }
-
+        
+        onEnemyScoreGain.Invoke(Score(stateBoard, SlotState.AI));
+        onPlayerScoreGain.Invoke(Score(stateBoard, SlotState.Player));
+        
         if (Score(stateBoard, SlotState.Player) == 0)
             onLose.Invoke();
 
@@ -346,6 +353,11 @@ public class GameManager : MonoBehaviour
 
         Debug.LogError("Något är trasigt");
         return false;
+    }
+
+    public void ChangeSearchDeath(int newValue)
+    {
+        MaxSearchDepth = newValue+1;
     }
 
 }
